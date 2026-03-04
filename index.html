@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreetSupply Hub | B2B Marketplace</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="landing-nav">
+        <div class="nav-left-group">
+            <button id="menu-btn" class="hidden" onclick="toggleSidebar()">☰</button>
+            <h2 class="logo" onclick="location.reload()" style="cursor:pointer">StreetSupply<span>Hub</span></h2>
+        </div>
+
+        <div id="search-container" class="search-wrapper">
+            <select id="category-select" onchange="filterProducts()" class="category-select">
+                <option value="all">All</option>
+                <option value="vegetable">Vegetables</option>
+                <option value="flour">Flour</option>
+                <option value="oil">Oils</option>
+                <option value="grains">Grains</option>
+            </select>
+            <input type="text" id="landing-search" placeholder="Search products..." onkeyup="filterProducts()">
+        </div>
+
+        <div class="nav-right-group">
+            <div id="google_translate_element" class="translate-btn"></div>
+            <div class="cart-icon-wrapper" onclick="toggleCart()">
+                <span>🛒</span>
+                <span id="cart-count">0</span>
+            </div>
+            <div id="profile-wrapper" class="hidden profile-wrapper">
+                <div class="profile-icon" onclick="toggleProfileMenu()" id="profile-icon">U</div>
+                <div id="profile-dropdown" class="profile-dropdown hidden">
+                    <div class="profile-info">
+                        <div class="profile-circle" id="profile-letter">U</div>
+                        <div>
+                            <strong id="profile-display-name">User</strong><br>
+                            <small id="profile-display-phone"></small>
+                        </div>
+                    </div>
+                    <hr>
+                    <button onclick="openProfilePage()" class="profile-btn">Profile Settings</button>
+                    <button onclick="logout()" class="profile-btn logout-btn">Logout</button>
+                </div>
+            </div>
+            <button id="auth-nav-btn" class="btn-login-nav" onclick="showLogin()">Login</button>
+        </div>
+    </header>
+    <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement(
+        {pageLanguage: 'en', includedLanguages: 'en,hi,te'},
+        'google_translate_element'
+      );
+    }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- PROFILE SETTINGS PAGE -->
+    <div id="profile-page" class="hidden container">
+        <h2>Profile Settings</h2>
+        <div class="profile-box">
+            <label>Name</label>
+            <input type="text" id="profile-edit-name" class="input-field" readonly>
+
+            <label>Phone</label>
+            <input type="text" id="profile-edit-phone" class="input-field" readonly>
+
+            <label>Business</label>
+            <input type="text" id="profile-edit-business" class="input-field">
+
+            <label>Address</label>
+            <textarea id="profile-edit-address" class="input-field"></textarea>
+
+            <button class="btn-primary" onclick="saveProfileChanges()">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- GROUP HUB PAGE -->
+    <div id="group-hub-page" class="hidden">
+        <div class="container">
+            <h2>Group Hub</h2>
+            <div class="trend-section" style="padding:20px; margin-bottom:20px;">
+                <h3>Add a Friend</h3>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="friend-search-input" class="input-field" placeholder="Search username (e.g., Rahul123)">
+                    <button class="btn-primary" style="width:auto;" onclick="searchFriend()">Search</button>
+                </div>
+                <div id="search-result" style="margin-top:15px;"></div>
+            </div>
+
+            <div class="feature-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div class="trend-section" style="padding:20px;">
+                    <h3>My Friends</h3>
+                    <ul id="friend-list" style="list-style:none; padding:0;">
+                        <li style="color:#888;">No friends added yet.</li>
+                    </ul>
+                </div>
+                <div class="trend-section" style="padding:20px;">
+                    <h3>Active Group (Min 5)</h3>
+                    <p id="group-count">Members: 1/5</p>
+                    <progress id="group-progress" value="1" max="5" style="width:100%;"></progress>
+                    <p id="group-benefit" style="color:#27ae60; font-weight:bold; margin-top:10px; display:none;">
+                        ✅ 10% Group Discount Unlocked!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="left-sidebar" class="sidebar-hidden">
+        <div class="sidebar-header">
+            <h3>Menu</h3>
+            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">×</button>
+        </div>
+        <div id="sidebar-content" class="sidebar-links"></div>
+    </div>
+
+    <div id="landing-page" class="hidden">
+        <section class="hero-mini" id="hero-section">
+            <h1>Direct from <span class="highlight">Sellers</span></h1>
+            <p>Verified raw materials with transparent pricing & digital bargaining.</p>
+        </section>
+
+        <div class="container">
+            <div class="insights-grid">
+                <section id="trend-section" class="trend-section">
+                    <h2>Recent Price Trends</h2>
+                    <div id="trend-list" class="trend-list"></div>
+                </section>
+                <section id="recommend-section" class="trend-section recommendation-section">
+                    <h2>Recommended for You</h2>
+                    <div id="recommend-list" class="recommend-list"></div>
+                </section>
+            </div>
+        </div>
+
+        <section class="products-grid" id="product-list"></section>
+    </div>
+
+    <div id="cart-sidebar" class="cart-hidden">
+        <div class="cart-header">
+            <h3>Your Order</h3>
+            <button class="close-btn" onclick="toggleCart()">×</button>
+        </div>
+        <div id="cart-items">
+            <p style="padding:20px; text-align:center;">Empty</p>
+        </div>
+        <div class="cart-footer">
+            <p id="cart-total-footer" style="font-weight:bold"></p>
+            <button class="btn-primary" onclick="placeOrder()">Checkout Now</button>
+        </div>
+    </div>
+
+    <div id="auth-container">
+        <div id="login-page" class="auth-card">
+            <h2>Welcome Back</h2>
+            <input type="text" id="login-name" class="input-field" placeholder="Full Name" onkeydown="handleLoginKey(event)">
+            <input type="tel" id="login-phone" class="input-field" placeholder="Phone Number" onkeydown="handleLoginKey(event)">
+            
+            <div id="login-initial-action">
+                <button class="btn-primary" onclick="sendOTP()">Send OTP</button>
+            </div>
+
+            <div id="otp-section" class="hidden" style="margin-top: 15px;">
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">Enter OTP sent to your phone</p>
+                <input type="text" id="otp-input" class="input-field otp-box" maxlength="4" onkeydown="handleLoginKey(event)">
+                <button class="btn-primary" onclick="verifyOTP()" style="margin-top:10px;">Verify & Enter Marketplace</button>
+                <p id="login-otp-message" class="otp-message"></p>
+            </div>
+
+            <p class="auth-footer">New here? <a href="#" onclick="showRegister()">Register Business</a></p>
+        </div>
+
+        <div id="register-page" class="auth-card hidden">
+            <h2>Join The Hub</h2>
+            <div class="role-selection">
+                <div class="role-block" id="block-vendor" onclick="selectRole('vendor')"><h3>Vendor</h3></div>
+                <div class="role-block" id="block-supplier" onclick="selectRole('supplier')"><h3>Supplier</h3></div>
+            </div>
+            <div id="registration-form" class="hidden">
+                <input type="text" id="reg-name" class="input-field" placeholder="Full Name">
+                <input type="tel" id="reg-phone" class="input-field" placeholder="Phone Number">
+                <input type="text" id="reg-biz" class="input-field" placeholder="Business Name">
+                <textarea id="reg-addr" class="input-field" placeholder="Full Business Address"></textarea>
+                
+                <div class="file-input-group">
+                    <label>Masked Aadhaar (Required for Verification)</label>
+                    <input type="file" id="reg-aadhaar">
+                </div>
+
+                <div id="supplier-product-section" class="hidden">
+                    <input type="text" id="reg-products" class="input-field" placeholder="Products you will sell (e.g. Rice, Oil)">
+                </div>
+
+                <p id="register-main-message" class="otp-message"></p>
+
+                <button class="btn-primary" onclick="finalizeRegistration()">Send OTP</button>
+
+                <div id="register-otp-section" class="hidden" style="margin-top:15px;">
+                    <input type="text" id="register-otp-input" class="input-field otp-box" maxlength="4" placeholder="Enter OTP">
+                    <button class="btn-primary" onclick="verifyRegisterOTP()" style="margin-top:10px;">
+                        Verify & Complete Registration
+                    </button>
+                </div>
+                <p style="text-align:center; margin-top:10px;"><a href="#" onclick="showLogin()">Back to Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="bargain-modal" class="hidden loan-popup">
+        <div class="loan-box" style="width: 360px; padding: 30px;">
+            <h3>Digital Bargain</h3>
+            <p id="bargain-prod-name" style="font-weight:800; color:var(--primary); margin-bottom:5px;"></p>
+            <p style="font-size: 0.9rem; margin-bottom: 15px;">Market Price: <span id="current-price-display"></span></p>
+            
+            <label style="font-size: 0.8rem; display: block; text-align: left;">Your Offer Price (per unit):</label>
+            <input type="number" id="offer-price" class="input-field" placeholder="₹ Enter Price">
+            
+            <label style="font-size: 0.8rem; display: block; text-align: left; margin-top: 10px;">Quantity required:</label>
+            <input type="number" id="offer-qty" class="input-field" placeholder="Enter Quantity">
+            
+            <button class="btn-primary" onclick="submitBargain()" style="margin-top: 15px;">Send Offer to Supplier</button>
+            <button class="btn-primary" style="background:#eee; color:#333; margin-top:8px;" onclick="closeBargain()">Cancel</button>
+        </div>
+    </div>
+
+    <div id="seller-dashboard" class="hidden container"></div>
+
+    <div id="vendor-bargains-page" class="hidden container" style="margin-top:40px;"></div>
+
+    <div id="previous-orders-page" class="hidden container" style="margin-top:40px;">
+        <h2>Previous Orders</h2>
+        <div id="previous-orders-list"></div>
+        <button class="btn-primary" onclick="goHome()" style="width:auto; padding: 10px 30px;">⬅ Back to Home</button>
+        <br>
+    </div>
+
+    <div id="about-page" class="hidden">
+        <div class="container" style="max-width: 800px; margin: 40px auto; line-height: 1.6;">
+            <h2 style="color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 10px;">About Our Marketplace</h2>
+            <p style="margin-top: 20px; font-size: 1.1rem; color: #555;">
+                Welcome to <strong>Direct Bargaining</strong>, the ultimate B2B bridge between local suppliers and small-scale vendors. 
+                Our platform is designed to simplify bulk procurement through transparency and direct communication.
+            </p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+                <div style="background: #fdf2e9; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #d35400;">For Vendors</h4>
+                    <p>Access fresh stock at wholesale prices, join group orders to meet MOQs, and negotiate directly with suppliers to grow your business.</p>
+                </div>
+                <div style="background: #ebf5fb; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #2980b9;">For Suppliers</h4>
+                    <p>Manage your inventory in real-time, handle bulk bargain requests efficiently, and reach a wider network of verified local buyers.</p>
+                </div>
+            </div>
+            
+            <p style="margin-top: 30px; text-align: center; color: #7f8c8d;">
+                <em>Empowering local trade through digital innovation.</em>
+            </p>
+            <button class="btn-primary" onclick="goHome()" style="margin-top: 20px;">Back to Home</button>
+        </div>
+    </div>
+
+    <div id="tracking-page" class="hidden container" style="margin-top:40px;">
+        <h2>Order Tracking</h2>
+        <div id="tracking-list"></div>
+        <br>
+        <button class="btn-primary" onclick="goHome()" style="width:auto; padding: 10px 30px;">⬅ Back to Home</button>
+    </div>
+
+    <div id="support-page" class="hidden container" style="margin-top:40px;">
+        <h2>Support</h2>
+        <div class="profile-box">
+            <label>Subject</label>
+            <input type="text" id="support-subject" class="input-field" placeholder="Enter subject">
+
+            <label>Message</label>
+            <textarea id="support-message" class="input-field" placeholder="Describe your issue or feedback"></textarea>
+
+            <label>Type</label>
+            <select id="support-type" class="input-field">
+                <option value="complaint">⚠ Complaint</option>
+                <option value="query">❓ Query</option>
+            </select>
+            <button class="btn-primary" onclick="submitSupport()">Submit</button>
+        </div>
+
+        <button class="btn-primary" onclick="goHome()" style="width:auto; padding:10px 30px;">⬅ Back to Home</button>
+    </div>
+
+    <div id="reviews-page" class="hidden container" style="margin-top:40px;">
+        <h2>⭐ Rate Suppliers</h2>
+        <div id="review-success" class="hidden success-message"></div>
+        <div id="reviews-list"></div>
+        <br>
+        <button class="btn-primary" onclick="goHome()" style="width:auto; padding:10px 30px;">⬅ Back to Home</button>
+    </div>
+
+    <div id="chatbot-container">
+        <div id="chat-circle" class="chat-button" onclick="toggleChatWindow()">
+            <img id="chat-icon" alt="Chatbot" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect x='6' y='10' width='52' height='36' rx='8' fill='%23ffffff'/><rect x='14' y='20' width='36' height='6' rx='3' fill='%23fb9b8f'/><rect x='14' y='30' width='22' height='6' rx='3' fill='%23f4c2b7'/><path d='M24 46 L18 56 L30 46 Z' fill='%23ffffff'/><circle cx='24' cy='6' r='4' fill='%23ffffff'/><rect x='30' y='2' width='6' height='8' rx='3' fill='%23ffffff'/></svg>">
+        </div>
+
+        <div id="chat-window" class="chat-window hidden">
+            <div class="chat-header">
+                <span>Market Assistant</span>
+                <button onclick="toggleChatWindow()" class="close-chat">×</button>
+            </div>
+            <div id="chat-body" class="chat-body">
+                <div class="bot-msg">Hello! Ask me about products, prices, or market trends.</div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chat-input" placeholder="Ask about prices..." onkeypress="handleChatKey(event)">
+                <button onclick="sendChatMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
